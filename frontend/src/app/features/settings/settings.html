@@ -1,0 +1,242 @@
+<div class="settings-page">
+  <h1 class="page-title">Configurações</h1>
+
+  @if (loading()) {
+    <div class="loading-center">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()">
+
+      <!-- Perfil pessoal -->
+      <mat-card>
+        <mat-card-header>
+          <mat-icon mat-card-avatar>account_circle</mat-icon>
+          <mat-card-title>Perfil</mat-card-title>
+          <mat-card-subtitle>{{ auth.currentUser()?.email }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="card-fields">
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nome</mat-label>
+            <input matInput formControlName="name" />
+            <mat-icon matSuffix>person</mat-icon>
+          </mat-form-field>
+
+          <div class="two-col">
+            <mat-form-field appearance="outline">
+              <mat-label>Data de nascimento</mat-label>
+              <input matInput type="date" formControlName="birthDate" />
+              <mat-icon matSuffix>cake</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Peso (kg)</mat-label>
+              <input matInput type="number" formControlName="weight" placeholder="Ex: 78" step="0.1" />
+              <span matSuffix>kg</span>
+              @if (form.controls.weight.invalid) {
+                <mat-error>Entre 20 e 300 kg</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Meu perfil de saúde</mat-label>
+            <mat-select formControlName="diabetesType">
+              @for (opt of diabetesOptions; track opt.value) {
+                <mat-option [value]="opt.value">
+                  <span class="option-label">{{ opt.label }}</span>
+                  <span class="option-desc">{{ opt.description }}</span>
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Limitações físicas (opcional)</mat-label>
+            <textarea
+              matInput
+              formControlName="physicalLimitations"
+              rows="2"
+              placeholder="Ex: problema no joelho direito, mobilidade reduzida"
+            ></textarea>
+          </mat-form-field>
+
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Faixas-alvo -->
+      <mat-card>
+        <mat-card-header>
+          <mat-icon mat-card-avatar>tune</mat-icon>
+          <mat-card-title>Faixas-alvo de glicemia</mat-card-title>
+          <mat-card-subtitle>Usadas para calcular TIR e gerar alertas</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="card-fields">
+          <div class="range-fields">
+            <mat-form-field appearance="outline">
+              <mat-label>Mínimo (mg/dL)</mat-label>
+              <input matInput type="number" formControlName="targetMin" />
+              <mat-hint>Padrão: 70</mat-hint>
+              @if (form.controls.targetMin.invalid) {
+                <mat-error>Entre 40 e 200</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Máximo (mg/dL)</mat-label>
+              <input matInput type="number" formControlName="targetMax" />
+              <mat-hint>Padrão: 180</mat-hint>
+              @if (form.controls.targetMax.invalid) {
+                <mat-error>Entre 80 e 400</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <p class="range-tip">
+            Para <strong>Tipo 1</strong>, a meta da ADA é 70–180 mg/dL (TIR acima de 70%).<br />
+            Para <strong>Pré-diabetes</strong>, foque em manter abaixo de 140 mg/dL pós-refeição.
+          </p>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Feedback e botão salvar -->
+      @if (saveSuccess()) {
+        <div class="success-banner">
+          <mat-icon>check_circle</mat-icon> Perfil salvo com sucesso!
+        </div>
+      }
+      @if (error()) {
+        <div class="error-banner">
+          <mat-icon>error_outline</mat-icon> {{ error() }}
+        </div>
+      }
+
+      <div class="form-actions">
+        <button mat-flat-button color="primary" type="submit" [disabled]="saving() || form.invalid">
+          @if (saving()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            <ng-container>
+              <mat-icon>save</mat-icon> Salvar alterações
+            </ng-container>
+          }
+        </button>
+      </div>
+
+    </form>
+
+    <!-- FreeStyle Libre 2 Plus -->
+    <mat-card>
+      <mat-card-header>
+        <mat-icon mat-card-avatar>sensors</mat-icon>
+        <mat-card-title>FreeStyle Libre 2 Plus</mat-card-title>
+        <mat-card-subtitle>Sincronização automática via LibreLink Up (Abbott)</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content class="card-fields">
+
+        @if (libreStatus()?.connected) {
+          <!-- Conectado -->
+          <div class="libre-connected">
+            <div class="libre-info">
+              <span class="libre-name">{{ libreStatus()?.patientName }}</span>
+              @if (libreStatus()?.lastSync) {
+                <span class="libre-sync-date">
+                  Última sync: {{ libreStatus()?.lastSync | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+              } @else {
+                <span class="libre-sync-date">Nunca sincronizado</span>
+              }
+            </div>
+            <div class="libre-actions">
+              <button mat-stroked-button (click)="syncLibre()" [disabled]="libreSyncing()">
+                @if (libreSyncing()) {
+                  <mat-spinner diameter="18" />
+                } @else {
+                  <mat-icon>sync</mat-icon>
+                }
+                Sincronizar
+              </button>
+              <button mat-icon-button color="warn" (click)="disconnectLibre()" title="Desconectar">
+                <mat-icon>link_off</mat-icon>
+              </button>
+            </div>
+          </div>
+          @if (libreError()) {
+            <p class="libre-message">{{ libreError() }}</p>
+          }
+
+        } @else if (librePatients().length > 0) {
+          <!-- Pacientes encontrados — aguardando seleção -->
+          <p class="libre-label">Selecione o paciente monitorado:</p>
+          <mat-radio-group class="libre-radio-group">
+            @for (p of librePatients(); track p.patientId) {
+              <mat-radio-button
+                [value]="p"
+                [checked]="selectedPatient?.patientId === p.patientId"
+                (change)="selectedPatient = p">
+                {{ p.displayName || 'Paciente' }}
+              </mat-radio-button>
+            }
+          </mat-radio-group>
+          <div class="libre-row-actions">
+            <button mat-flat-button color="primary" [disabled]="!selectedPatient" (click)="saveLibreConfig()">
+              <mat-icon>check</mat-icon> Salvar configuração
+            </button>
+            <button mat-button (click)="librePatients.set([]); libreForm.reset()">
+              Cancelar
+            </button>
+          </div>
+
+        } @else {
+          <!-- Formulário de credenciais -->
+          <p class="libre-hint">
+            Use o e-mail e senha da conta LibreLink do paciente. Os dados são lidos
+            da nuvem Abbott — o sensor e o app oficial continuam funcionando normalmente.
+          </p>
+          <form [formGroup]="libreForm" (ngSubmit)="testLibreCredentials()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>E-mail LibreLink</mat-label>
+              <input matInput formControlName="email" type="email" />
+              <mat-icon matSuffix>email</mat-icon>
+              @if (libreForm.controls.email.invalid && libreForm.controls.email.touched) {
+                <mat-error>E-mail inválido</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Senha LibreLink</mat-label>
+              <input matInput formControlName="password" [type]="librePasswordVisible ? 'text' : 'password'" />
+              <button mat-icon-button matSuffix type="button" (click)="librePasswordVisible = !librePasswordVisible">
+                <mat-icon>{{ librePasswordVisible ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              @if (libreForm.controls.password.invalid && libreForm.controls.password.touched) {
+                <mat-error>Informe a senha</mat-error>
+              }
+            </mat-form-field>
+            @if (libreError()) {
+              <p class="libre-error">{{ libreError() }}</p>
+            }
+            <button mat-flat-button color="primary" type="submit" [disabled]="libreTesting() || libreForm.invalid">
+              @if (libreTesting()) {
+                <mat-spinner diameter="18" />
+              } @else {
+                <mat-icon>sensors</mat-icon>
+              }
+              Verificar credenciais
+            </button>
+          </form>
+        }
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Zona de perigo -->
+    <mat-card class="danger-card">
+      <mat-card-content>
+        <button mat-stroked-button color="warn" type="button" (click)="logout()">
+          <mat-icon>logout</mat-icon> Sair da conta
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

@@ -1,0 +1,105 @@
+<div class="new-reading-page">
+  <div class="page-header">
+    <button mat-icon-button routerLink="/readings">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="page-title">Nova Medição</h1>
+  </div>
+
+  <mat-card class="reading-card">
+    <mat-card-content>
+      @if (success()) {
+        <div class="success-state">
+          <mat-icon>check_circle</mat-icon>
+          <h3>Medição salva!</h3>
+          <p>Redirecionando para o histórico...</p>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="reading-form">
+          @if (error()) {
+            <div class="error-banner">
+              <mat-icon>error_outline</mat-icon> {{ error() }}
+            </div>
+          }
+
+          <!-- Valor -->
+          <div class="value-section">
+            <mat-form-field appearance="outline" class="value-field">
+              <mat-label>Glicemia</mat-label>
+              <input
+                matInput
+                type="number"
+                formControlName="value"
+                placeholder="Ex: 95"
+                min="20"
+                max="600"
+              />
+              <span matSuffix>mg/dL</span>
+              @if (form.controls.value.hasError('required')) {
+                <mat-error>Valor obrigatório</mat-error>
+              } @else if (form.controls.value.hasError('min') || form.controls.value.hasError('max')) {
+                <mat-error>Valor entre 20 e 600 mg/dL</mat-error>
+              }
+            </mat-form-field>
+
+            @if (form.controls.value.value) {
+              <div class="glucose-badge" [class]="getGlucoseClass(form.controls.value.value)">
+                {{ getGlucoseLabel(form.controls.value.value) }}
+              </div>
+            }
+          </div>
+
+          <!-- Data/hora -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Data e hora</mat-label>
+            <input matInput type="datetime-local" formControlName="measuredAt" />
+            <mat-icon matSuffix>schedule</mat-icon>
+          </mat-form-field>
+
+          <!-- Momento da refeição -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Momento</mat-label>
+            <mat-select formControlName="mealContext">
+              @for (opt of mealContextOptions; track opt.value) {
+                <mat-option [value]="opt.value">
+                  <mat-icon>{{ opt.icon }}</mat-icon>
+                  {{ opt.label }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Observações -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Observações (opcional)</mat-label>
+            <textarea
+              matInput
+              formControlName="notes"
+              rows="3"
+              placeholder="Ex: após caminhada de 30 min, almocei macarrão..."
+            ></textarea>
+            <mat-icon matSuffix>notes</mat-icon>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-button type="button" routerLink="/readings">Cancelar</button>
+            <button
+              mat-flat-button
+              color="primary"
+              type="submit"
+              [disabled]="loading() || form.invalid"
+            >
+              @if (loading()) {
+                <mat-spinner diameter="20" />
+              } @else {
+                <ng-container>
+                  <mat-icon>save</mat-icon> Salvar Medição
+                </ng-container>
+              }
+            </button>
+          </div>
+        </form>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,132 @@
+<div class="dashboard">
+  <div class="dashboard-header">
+    <div>
+      <h1 class="dashboard-title">Olá, {{ userName }} 👋</h1>
+      <p class="dashboard-subtitle">Resumo dos últimos 14 dias</p>
+    </div>
+    <a mat-flat-button color="primary" routerLink="/readings/new">
+      <mat-icon>add</mat-icon> Nova Medição
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-center">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (error()) {
+    <div class="error-banner">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+  } @else {
+    <!-- Cards de métricas -->
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon stat-icon--primary">
+            <mat-icon>timeline</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Média</span>
+            <span class="stat-value">{{ stats()?.average | number: '1.0-0' }} mg/dL</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card" [class.stat-card--good]="(stats()?.timeInRange ?? 0) >= 70">
+        <mat-card-content>
+          <div class="stat-icon stat-icon--success">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">TIR (70–180 mg/dL)</span>
+            <span class="stat-value">{{ stats()?.timeInRange | number: '1.0-1' }}%</span>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="stats()?.timeInRange ?? 0"
+              [color]="(stats()?.timeInRange ?? 0) >= 70 ? 'primary' : 'warn'"
+            />
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon stat-icon--warning">
+            <mat-icon>show_chart</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Variabilidade (CV)</span>
+            <span class="stat-value">{{ stats()?.coefficientOfVariation | number: '1.0-1' }}%</span>
+            <span class="stat-hint">Meta: abaixo de 36%</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon stat-icon--info">
+            <mat-icon>science</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">HbA1c estimada</span>
+            <span class="stat-value">{{ stats()?.estimatedHba1c | number: '1.0-1' }}%</span>
+            <span class="stat-hint">Baseado em {{ stats()?.totalReadings }} medições</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Faixas de tempo -->
+    <mat-card class="range-card">
+      <mat-card-header>
+        <mat-card-title>Distribuição das Leituras</mat-card-title>
+        <mat-card-subtitle>Percentual do tempo em cada faixa</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="range-row">
+          <span class="range-label danger">Abaixo (< 70)</span>
+          <mat-progress-bar mode="determinate" color="warn" [value]="stats()?.timeBelow ?? 0" />
+          <span class="range-pct">{{ stats()?.timeBelow | number: '1.0-1' }}%</span>
+        </div>
+        <div class="range-row">
+          <span class="range-label normal">Na faixa (70–180)</span>
+          <mat-progress-bar mode="determinate" [value]="stats()?.timeInRange ?? 0" />
+          <span class="range-pct">{{ stats()?.timeInRange | number: '1.0-1' }}%</span>
+        </div>
+        <div class="range-row">
+          <span class="range-label high">Acima (> 180)</span>
+          <mat-progress-bar mode="determinate" color="accent" [value]="stats()?.timeAbove ?? 0" />
+          <span class="range-pct">{{ stats()?.timeAbove | number: '1.0-1' }}%</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Últimas medições -->
+    <mat-card class="recent-card">
+      <mat-card-header>
+        <mat-card-title>Últimas Medições</mat-card-title>
+        <a mat-button color="primary" routerLink="/readings">Ver todas</a>
+      </mat-card-header>
+      <mat-card-content>
+        @if (recentReadings().length === 0) {
+          <div class="empty-state">
+            <mat-icon>monitor_heart</mat-icon>
+            <p>Nenhuma medição registrada ainda.</p>
+            <a mat-flat-button color="primary" routerLink="/readings/new">Registrar agora</a>
+          </div>
+        } @else {
+          <div class="readings-list">
+            @for (reading of recentReadings(); track reading.id) {
+              <div class="reading-item" [class]="'reading-item--' + getGlucoseStatus(reading.value)">
+                <span class="reading-value">{{ reading.value }} <small>mg/dL</small></span>
+                <span class="reading-label">{{ getGlucoseLabel(reading.value) }}</span>
+                <span class="reading-time">{{ formatTime(reading.measuredAt) }}</span>
+              </div>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

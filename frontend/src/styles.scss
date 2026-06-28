@@ -1,0 +1,41 @@
+@use '@angular/material' as mat;
+
+$glucotrack-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$violet-palette,
+    tertiary: mat.$azure-palette,
+  ),
+));
+
+html {
+  @include mat.all-component-themes($glucotrack-theme);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', Roboto, 'Helvetica Neue', sans-serif;
+  background: #f5f5f5;
+  color: #212121;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 3px;
+}

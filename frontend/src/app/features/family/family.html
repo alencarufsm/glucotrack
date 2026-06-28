@@ -1,0 +1,88 @@
+<div class="family-page">
+  <h1 class="page-title">Família</h1>
+  <p class="page-subtitle">Gerencie quem acompanha seus dados ou quem você acompanha</p>
+
+  <!-- Convidar -->
+  <mat-card class="invite-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>person_add</mat-icon>
+      <mat-card-title>Convidar Familiar</mat-card-title>
+      <mat-card-subtitle>O familiar receberá acesso de leitura ao seu perfil</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      @if (inviteSuccess()) {
+        <div class="success-banner">
+          <mat-icon>check_circle</mat-icon> {{ inviteSuccess() }}
+        </div>
+      }
+      @if (inviteError()) {
+        <div class="error-banner">
+          <mat-icon>error_outline</mat-icon> {{ inviteError() }}
+        </div>
+      }
+      <div class="invite-form">
+        <mat-form-field appearance="outline" class="invite-email">
+          <mat-label>E-mail do familiar</mat-label>
+          <input matInput type="email" [(ngModel)]="inviteEmail" placeholder="familiar@email.com" />
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+        <button
+          mat-flat-button
+          color="primary"
+          [disabled]="!inviteEmail || inviting()"
+          (click)="sendInvite()"
+        >
+          @if (inviting()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            <ng-container>
+              <mat-icon>send</mat-icon> Enviar Convite
+            </ng-container>
+          }
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Conexões -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Conexões Familiares</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @if (loading()) {
+        <div class="loading-center">
+          <mat-spinner diameter="40" />
+        </div>
+      } @else if (error()) {
+        <div class="error-banner">
+          <mat-icon>error_outline</mat-icon> {{ error() }}
+        </div>
+      } @else if (connections().length === 0) {
+        <div class="empty-state">
+          <mat-icon>group</mat-icon>
+          <p>Nenhuma conexão familiar ainda.<br />Convide alguém acima.</p>
+        </div>
+      } @else {
+        <div class="connections-list">
+          @for (conn of connections(); track conn.id) {
+            <div class="connection-item">
+              <mat-icon class="conn-icon">person</mat-icon>
+              <div class="conn-info">
+                <span class="conn-name">
+                  {{ conn.monitoredUserName ?? conn.observerUserName ?? 'Familiar' }}
+                </span>
+                <span class="conn-date">
+                  Desde {{ conn.invitedAt | date: 'dd/MM/yyyy' }}
+                </span>
+              </div>
+              <mat-chip [color]="getStatusColor(conn.status)" highlighted>
+                {{ getStatusLabel(conn.status) }}
+              </mat-chip>
+            </div>
+          }
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

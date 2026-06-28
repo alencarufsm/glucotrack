@@ -1,0 +1,83 @@
+<div class="history-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Histórico de Medições</h1>
+      <p class="page-subtitle">Visualize a evolução da sua glicemia</p>
+    </div>
+    <a mat-flat-button color="primary" routerLink="/readings/new">
+      <mat-icon>add</mat-icon> Nova Medição
+    </a>
+  </div>
+
+  <!-- Filtro de período -->
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <mat-form-field appearance="outline">
+        <mat-label>Período</mat-label>
+        <mat-select [(ngModel)]="selectedDays" (ngModelChange)="loadReadings()">
+          @for (opt of dayOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </mat-card-content>
+  </mat-card>
+
+  @if (loading()) {
+    <div class="loading-center">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (error()) {
+    <div class="error-banner">
+      <mat-icon>error_outline</mat-icon> {{ error() }}
+    </div>
+  } @else {
+    <!-- Gráfico -->
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>Gráfico de Glicemia</mat-card-title>
+        <mat-card-subtitle>Faixa alvo (70–180 mg/dL) destacada em verde</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (readings().length === 0) {
+          <div class="empty-state">
+            <mat-icon>show_chart</mat-icon>
+            <p>Nenhuma medição no período selecionado.</p>
+          </div>
+        } @else {
+          <canvas #chartCanvas class="chart-canvas"></canvas>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tabela de leituras -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Lista de Leituras</mat-card-title>
+        <mat-card-subtitle>{{ readings().length }} medições</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="readings-table">
+          <div class="readings-table__header">
+            <span>Data/Hora</span>
+            <span>Valor</span>
+            <span>Momento</span>
+            <span>Observações</span>
+          </div>
+          @for (r of readings(); track r.id) {
+            <div class="readings-table__row" [class]="'row--' + getStatusClass(r.value)">
+              <span>{{ formatDateTime(r.measuredAt) }}</span>
+              <span class="value-cell">
+                <strong>{{ r.value }}</strong> mg/dL
+              </span>
+              <span>
+                <mat-chip>{{ getMealLabel(r.mealContext) }}</mat-chip>
+              </span>
+              <span class="notes-cell">{{ r.notes || '–' }}</span>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

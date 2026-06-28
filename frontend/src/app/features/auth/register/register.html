@@ -1,0 +1,77 @@
+@if (success()) {
+  <div class="success-box">
+    <mat-icon>check_circle</mat-icon>
+    <h3>Cadastro realizado!</h3>
+    <p>Verifique seu e-mail para confirmar a conta.</p>
+    <a routerLink="/login" mat-flat-button color="primary">Ir para o login</a>
+  </div>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="register-form">
+    <h2 class="form-title">Criar conta</h2>
+
+    @if (error()) {
+      <div class="error-banner">{{ error() }}</div>
+    }
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nome completo</mat-label>
+      <input matInput formControlName="name" autocomplete="name" />
+      <mat-icon matSuffix>person</mat-icon>
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Nome é obrigatório</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>E-mail</mat-label>
+      <input matInput type="email" formControlName="email" autocomplete="email" />
+      <mat-icon matSuffix>email</mat-icon>
+      @if (form.controls.email.hasError('email')) {
+        <mat-error>E-mail inválido</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Senha</mat-label>
+      <input
+        matInput
+        [type]="hidePassword() ? 'password' : 'text'"
+        formControlName="password"
+        autocomplete="new-password"
+      />
+      <button type="button" mat-icon-button matSuffix (click)="hidePassword.set(!hidePassword())">
+        <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      @if (form.controls.password.hasError('minlength')) {
+        <mat-error>Mínimo 6 caracteres</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Meu perfil</mat-label>
+      <mat-select formControlName="diabetesType">
+        @for (opt of diabetesOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button
+      mat-flat-button
+      color="primary"
+      type="submit"
+      class="full-width submit-btn"
+      [disabled]="loading() || form.invalid"
+    >
+      @if (loading()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        Criar conta
+      }
+    </button>
+
+    <p class="form-footer">
+      Já tem conta? <a routerLink="/login">Entrar</a>
+    </p>
+  </form>
+}

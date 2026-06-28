@@ -1,0 +1,43 @@
+<div class="alerts-page">
+  <h1 class="page-title">Alertas</h1>
+  <p class="page-subtitle">Histórico de alertas gerados pelo sistema</p>
+
+  @if (loading()) {
+    <div class="loading-center">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (error()) {
+    <div class="error-banner">
+      <mat-icon>error_outline</mat-icon> {{ error() }}
+    </div>
+  } @else if (alerts().length === 0) {
+    <mat-card>
+      <mat-card-content>
+        <div class="empty-state">
+          <mat-icon>notifications_none</mat-icon>
+          <p>Nenhum alerta registrado.</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="alerts-list">
+      @for (alert of alerts(); track alert.id) {
+        @let config = getAlertConfig(alert.type);
+        <mat-card class="alert-card">
+          <mat-card-content>
+            <div class="alert-icon" [style.background]="config.color + '22'">
+              <mat-icon [style.color]="config.color">{{ config.icon }}</mat-icon>
+            </div>
+            <div class="alert-info">
+              <span class="alert-type">{{ config.label }}</span>
+              @if (alert.readingValue) {
+                <span class="alert-value">{{ alert.readingValue }} mg/dL</span>
+              }
+              <span class="alert-time">{{ alert.triggeredAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>
