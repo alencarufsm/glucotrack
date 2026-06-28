@@ -1,0 +1,47 @@
+spring:
+  datasource:
+    # Connection string do Supabase: Settings > Database > Connection string > URI
+    # Substitua pela sua URL real. O formato é:
+    # jdbc:postgresql://db.XXXX.supabase.co:5432/postgres
+    url: ${SUPABASE_DB_URL}
+    username: postgres
+    password: ${SUPABASE_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      # "validate" verifica se o schema do banco bate com as entidades Java.
+      # Não altera o banco — quem cria as tabelas é o SQL que rodamos no Supabase.
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
+
+supabase:
+  # JWT Secret: Settings > API > JWT Settings > JWT Secret
+  jwt-secret: ${SUPABASE_JWT_SECRET}
+  # Project URL: Settings > API > Project URL
+  url: ${SUPABASE_URL}
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.glucotrack: DEBUG
+    org.springframework.security: INFO
+
+---
+# Perfil local de desenvolvimento
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: ${SUPABASE_DB_URL}
+    username: postgres
+    password: ${SUPABASE_DB_PASSWORD}
+  jpa:
+    show-sql: true

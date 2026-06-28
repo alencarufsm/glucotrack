@@ -1,0 +1,31 @@
+# Variáveis de ambiente — NUNCA subir para o GitHub
+.env
+.env.local
+.env.*.local
+*.env
+
+# Java / Maven
+backend/target/
+backend/.mvn/
+backend/*.class
+backend/*.jar
+
+# Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Flutter
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+
+# IDEs
+.idea/
+*.iml
+.vscode/settings.json
+*.DS_Store
+
+# Logs
+*.log
