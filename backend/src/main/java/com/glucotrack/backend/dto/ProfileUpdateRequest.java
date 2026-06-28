@@ -10,6 +10,7 @@ public record ProfileUpdateRequest(
     String name,
     LocalDate birthDate,
     DiabetesType diabetesType,
+    Double weight,
     String physicalLimitations,
 
     @Min(value = 40) @Max(value = 200)

@@ -40,6 +40,7 @@ public class ProfileController {
         if (req.name() != null)                profile.setName(req.name());
         if (req.birthDate() != null)            profile.setBirthDate(req.birthDate());
         if (req.diabetesType() != null)         profile.setDiabetesType(req.diabetesType());
+        if (req.weight() != null)               profile.setWeight(req.weight());
         if (req.physicalLimitations() != null)  profile.setPhysicalLimitations(req.physicalLimitations());
         if (req.targetMin() != null)            profile.setTargetMin(req.targetMin());
         if (req.targetMax() != null)            profile.setTargetMax(req.targetMax());

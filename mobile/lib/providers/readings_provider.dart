@@ -67,7 +67,7 @@ class ReadingsProvider extends ChangeNotifier {
 
       return reading;
     } catch (e) {
-      _error = 'Erro ao registrar medição. Verifique sua conexão.';
+      _error = 'Erro: $e';
       notifyListeners();
       return null;
     }

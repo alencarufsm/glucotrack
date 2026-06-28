@@ -92,6 +92,6 @@ class AuthProvider extends ChangeNotifier {
     if (message.contains('Invalid login')) return 'E-mail ou senha incorretos';
     if (message.contains('already registered')) return 'Este e-mail já está cadastrado';
     if (message.contains('password')) return 'Senha deve ter pelo menos 6 caracteres';
-    return 'Erro ao autenticar. Tente novamente.';
+    return 'Erro: $message';
   }
 }

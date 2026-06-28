@@ -2,6 +2,7 @@ package com.glucotrack.backend.controller;
 
 import com.glucotrack.backend.dto.GlucoseReadingRequest;
 import com.glucotrack.backend.dto.GlucoseReadingResponse;
+import com.glucotrack.backend.dto.GlucoseStatsResponse;
 import com.glucotrack.backend.entity.GlucoseReading;
 import com.glucotrack.backend.entity.Profile;
 import com.glucotrack.backend.enums.MealContext;
@@ -72,6 +73,23 @@ public class ReadingController {
         }
 
         return ResponseEntity.ok(readings.stream().map(GlucoseReadingResponse::from).toList());
+    }
+
+    // GET /api/readings/stats — métricas clínicas (TIR, CV, HbA1c estimada)
+    @GetMapping("/stats")
+    public ResponseEntity<GlucoseStatsResponse> stats(
+            @RequestParam(defaultValue = "14") int days,
+            Authentication auth) {
+
+        UUID userId = (UUID) auth.getPrincipal();
+        OffsetDateTime from = OffsetDateTime.now().minusDays(days);
+        OffsetDateTime to = OffsetDateTime.now();
+
+        List<GlucoseReading> readings =
+                readingRepository.findByUserIdAndMeasuredAtBetweenOrderByMeasuredAtDesc(userId, from, to);
+
+        List<Integer> values = readings.stream().map(r -> r.getValue()).toList();
+        return ResponseEntity.ok(GlucoseStatsResponse.from(values, days));
     }
 
     // GET /api/readings/latest — última medição registrada
