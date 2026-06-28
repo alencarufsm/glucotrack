@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/app_config.dart';
 import 'providers/auth_provider.dart';
+import 'providers/librelink_provider.dart';
 import 'providers/readings_provider.dart';
 import 'screens/alerts/alerts_screen.dart';
 import 'screens/auth/login_screen.dart';
@@ -12,6 +13,7 @@ import 'screens/auth/register_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/readings/add_reading_screen.dart';
 import 'screens/readings/history_screen.dart';
+import 'screens/settings/librelink_setup_screen.dart';
 import 'services/api_service.dart';
 
 void main() async {
@@ -36,6 +38,9 @@ class GlicoTrackApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider(apiService)),
         ChangeNotifierProvider(create: (_) => ReadingsProvider(apiService)),
+        ChangeNotifierProvider(
+          create: (_) => LibreLinkProvider(apiService)..initialize(),
+        ),
       ],
       child: const _AppShell(),
     );
@@ -79,6 +84,9 @@ class _AppShellState extends State<_AppShell> {
             builder: (_, __) => const AddReadingScreen()),
         GoRoute(path: '/history', builder: (_, __) => const HistoryScreen()),
         GoRoute(path: '/alerts', builder: (_, __) => const AlertsScreen()),
+        GoRoute(
+            path: '/settings/libre',
+            builder: (_, __) => const LibreLinkSetupScreen()),
       ],
     );
   }

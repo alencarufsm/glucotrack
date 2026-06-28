@@ -51,8 +51,15 @@ dependencies:
   # Armazenamento local (preferências do usuário)
   shared_preferences: ^2.5.3
 
+  # Armazenamento seguro para credenciais LibreLink
+  flutter_secure_storage: ^9.2.2
+
   # Formatação de datas
   intl: ^0.20.2
+
+dependency_overrides:
+  # device_info_plus 13.x tem bug com Xcode 16 (isiOSAppOnVision)
+  device_info_plus: ^10.1.2
 
 dev_dependencies:
   flutter_test:

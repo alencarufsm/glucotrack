@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/librelink_provider.dart';
 import '../../providers/readings_provider.dart';
 import '../../widgets/glucose_indicator.dart';
 
@@ -27,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final readings = context.watch<ReadingsProvider>();
+    final libre = context.watch<LibreLinkProvider>();
     final theme = Theme.of(context);
     final latest = readings.latestReading;
 
@@ -153,6 +155,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
 
+              const SizedBox(height: 16),
+
+              // Card do FreeStyle Libre
+              _LibreCard(
+                libre: libre,
+                onSync: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final errorColor = theme.colorScheme.error;
+                  try {
+                    final count = await libre.sync();
+                    await readings.loadLatestReading();
+                    messenger.showSnackBar(SnackBar(
+                      content: Text(count > 0
+                          ? '$count leituras sincronizadas do FreeStyle Libre'
+                          : 'Nenhuma leitura nova encontrada'),
+                    ));
+                  } catch (e) {
+                    messenger.showSnackBar(SnackBar(
+                      content: Text('Erro ao sincronizar: ${libre.error ?? e}'),
+                      backgroundColor: errorColor,
+                    ));
+                  }
+                },
+              ),
+
               const SizedBox(height: 24),
 
               // Faixas de referência — ajuda o usuário a interpretar os valores
@@ -162,6 +189,70 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LibreCard extends StatelessWidget {
+  final LibreLinkProvider libre;
+  final VoidCallback onSync;
+
+  const _LibreCard({required this.libre, required this.onSync});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    if (!libre.isConfigured) {
+      return OutlinedButton.icon(
+        onPressed: () => context.push('/settings/libre'),
+        icon: const Icon(Icons.sensors),
+        label: const Text('Conectar FreeStyle Libre 2 Plus'),
+      );
+    }
+
+    final lastSyncText = libre.lastSync != null
+        ? 'Última sync: ${DateFormat("dd/MM HH:mm").format(libre.lastSync!.toLocal())}'
+        : 'Nunca sincronizado';
+
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(Icons.sensors, color: theme.colorScheme.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    libre.patientName ?? 'FreeStyle Libre',
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  Text(lastSyncText,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant)),
+                ],
+              ),
+            ),
+            if (libre.isSyncing)
+              const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+            else
+              IconButton(
+                icon: const Icon(Icons.sync),
+                tooltip: 'Sincronizar agora',
+                onPressed: onSync,
+              ),
+          ],
         ),
       ),
     );

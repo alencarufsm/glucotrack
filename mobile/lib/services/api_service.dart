@@ -40,13 +40,14 @@ class ApiService {
     required String mealContext,
     String? notes,
     DateTime? measuredAt,
+    String source = 'MANUAL',
   }) async {
     final response = await _dio.post('/api/readings', data: {
       'value': value,
       'mealContext': mealContext,
       'notes': notes,
-      'measuredAt': (measuredAt ?? DateTime.now()).toIso8601String(),
-      'source': 'MANUAL',
+      'measuredAt': (measuredAt ?? DateTime.now()).toUtc().toIso8601String(),
+      'source': source,
     });
     return GlucoseReading.fromJson(response.data);
   }
@@ -56,8 +57,8 @@ class ApiService {
     DateTime? to,
   }) async {
     final queryParams = <String, String>{};
-    if (from != null) queryParams['from'] = from.toIso8601String();
-    if (to != null) queryParams['to'] = to.toIso8601String();
+    if (from != null) queryParams['from'] = from.toUtc().toIso8601String();
+    if (to != null) queryParams['to'] = to.toUtc().toIso8601String();
 
     final response = await _dio.get('/api/readings', queryParameters: queryParams);
     return (response.data as List).map((j) => GlucoseReading.fromJson(j)).toList();

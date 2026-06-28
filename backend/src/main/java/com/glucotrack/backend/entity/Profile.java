@@ -30,6 +30,9 @@ public class Profile {
     @Column(name = "diabetes_type", nullable = false)
     private DiabetesType diabetesType = DiabetesType.NONE;
 
+    @Column(name = "weight")
+    private Double weight;
+
     @Column(name = "physical_limitations", columnDefinition = "TEXT")
     private String physicalLimitations;
 
@@ -45,4 +48,20 @@ public class Profile {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    // Integração FreeStyle Libre via LibreLink Up API
+    @Column(name = "librelink_email")
+    private String librelinkEmail;
+
+    @Column(name = "librelink_password")
+    private String librelinkPassword;
+
+    @Column(name = "librelink_patient_id")
+    private String librelinkPatientId;
+
+    @Column(name = "librelink_patient_name")
+    private String librelinkPatientName;
+
+    @Column(name = "librelink_last_sync")
+    private OffsetDateTime librelinkLastSync;
 }
