@@ -2,6 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- NFC — leitura do UID do sensor FreeStyle Libre 2 Plus via toque -->
+	<key>NFCReaderUsageDescription</key>
+	<string>O GlicoTrack precisa de NFC para identificar o sensor FreeStyle Libre 2 Plus ao encostar o celular nele.</string>
+
+	<!-- Bluetooth LE — leitura direta do sensor FreeStyle Libre 2 Plus -->
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>O GlicoTrack usa Bluetooth para ler dados de glicose diretamente do sensor FreeStyle Libre 2 Plus.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>O GlicoTrack usa Bluetooth para conectar ao sensor FreeStyle Libre 2 Plus.</string>
+
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

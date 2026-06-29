@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/libre_ble_provider.dart';
 import '../../providers/librelink_provider.dart';
 import '../../providers/readings_provider.dart';
 import '../../widgets/glucose_indicator.dart';
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final auth = context.watch<AuthProvider>();
     final readings = context.watch<ReadingsProvider>();
     final libre = context.watch<LibreLinkProvider>();
+    final libreBle = context.watch<LibreBleProvider>();
     final theme = Theme.of(context);
     final latest = readings.latestReading;
 
@@ -157,7 +159,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 16),
 
-              // Card do FreeStyle Libre
+              // Card BLE direto (FreeStyle Libre 2 Plus via Bluetooth)
+              _LibreBleCard(ble: libreBle),
+
+              const SizedBox(height: 8),
+
+              // Card LibreLink Up (nuvem Abbott)
               _LibreCard(
                 libre: libre,
                 onSync: () async {
@@ -189,6 +196,125 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LibreBleCard extends StatelessWidget {
+  final LibreBleProvider ble;
+  const _LibreBleCard({required this.ble});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    // Não configurado — mostra botão de configuração
+    if (!ble.isConfigured) {
+      return OutlinedButton.icon(
+        onPressed: () => context.push('/settings/libre-ble'),
+        icon: const Icon(Icons.bluetooth),
+        label: const Text('Conectar sensor (NFC + Bluetooth)'),
+      );
+    }
+
+    final state = ble.state;
+    final reading = ble.lastReading;
+    final isConnected = ble.isConnected;
+
+    Color statusColor;
+    IconData statusIcon;
+    String statusLabel;
+
+    switch (state) {
+      case LibreBleConnectionState.connected:
+        statusColor = theme.colorScheme.primary;
+        statusIcon = Icons.bluetooth_connected;
+        statusLabel = 'Conectado';
+      case LibreBleConnectionState.connecting ||
+            LibreBleConnectionState.authenticating:
+        statusColor = theme.colorScheme.tertiary;
+        statusIcon = Icons.bluetooth_searching;
+        statusLabel = state == LibreBleConnectionState.authenticating
+            ? 'Autenticando...'
+            : 'Conectando...';
+      case LibreBleConnectionState.disconnected:
+        statusColor = theme.colorScheme.onSurfaceVariant;
+        statusIcon = Icons.bluetooth_disabled;
+        statusLabel = 'Desconectado';
+      default:
+        statusColor = theme.colorScheme.onSurfaceVariant;
+        statusIcon = Icons.bluetooth;
+        statusLabel = 'BLE';
+    }
+
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(statusIcon, color: statusColor, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Bluetooth direto · $statusLabel',
+                  style: theme.textTheme.labelMedium
+                      ?.copyWith(color: statusColor),
+                ),
+                const Spacer(),
+                if (!isConnected)
+                  TextButton.icon(
+                    onPressed: () => context.push('/settings/libre-ble'),
+                    icon: const Icon(Icons.bluetooth_searching, size: 16),
+                    label: const Text('Reconectar'),
+                    style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact),
+                  ),
+                if (isConnected)
+                  IconButton(
+                    icon: const Icon(Icons.bluetooth_disabled, size: 20),
+                    tooltip: 'Desconectar',
+                    onPressed: () => ble.disconnect(),
+                    visualDensity: VisualDensity.compact,
+                  ),
+              ],
+            ),
+            if (reading != null) ...[
+              const Divider(height: 16),
+              Row(
+                children: [
+                  Text(
+                    '${reading.valueInMgDl}',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text('mg/dL',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      )),
+                  const SizedBox(width: 8),
+                  Text(
+                    ble.trendArrow(reading.trendPerMinute),
+                    style: theme.textTheme.titleMedium,
+                  ),
+                ],
+              ),
+              Text(
+                'Agora · sensor ao vivo',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

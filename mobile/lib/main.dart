@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/app_config.dart';
 import 'providers/auth_provider.dart';
+import 'providers/libre_ble_provider.dart';
 import 'providers/librelink_provider.dart';
 import 'providers/readings_provider.dart';
 import 'screens/alerts/alerts_screen.dart';
@@ -13,6 +14,7 @@ import 'screens/auth/register_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/readings/add_reading_screen.dart';
 import 'screens/readings/history_screen.dart';
+import 'screens/settings/libre_nfc_connect_screen.dart';
 import 'screens/settings/librelink_setup_screen.dart';
 import 'services/api_service.dart';
 
@@ -40,6 +42,9 @@ class GlicoTrackApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReadingsProvider(apiService)),
         ChangeNotifierProvider(
           create: (_) => LibreLinkProvider(apiService)..initialize(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => LibreBleProvider(apiService)..initialize(),
         ),
       ],
       child: const _AppShell(),
@@ -87,6 +92,9 @@ class _AppShellState extends State<_AppShell> {
         GoRoute(
             path: '/settings/libre',
             builder: (_, __) => const LibreLinkSetupScreen()),
+        GoRoute(
+            path: '/settings/libre-ble',
+            builder: (_, __) => const LibreNfcConnectScreen()),
       ],
     );
   }

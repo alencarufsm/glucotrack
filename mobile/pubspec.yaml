@@ -57,6 +57,15 @@ dependencies:
   # Formatação de datas
   intl: ^0.20.2
 
+  # Bluetooth LE — leitura direta do sensor FreeStyle Libre 2 Plus
+  flutter_blue_plus: ^1.35.5
+
+  # NFC — leitura do UID do sensor via toque (ISO 15693 / NFC-V)
+  nfc_manager: ^3.5.0
+
+  # Permissões em runtime (Bluetooth, Localização no Android)
+  permission_handler: ^11.4.0
+
 dependency_overrides:
   # device_info_plus 13.x tem bug com Xcode 16 (isiOSAppOnVision)
   device_info_plus: ^10.1.2
