@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npx ng build --configuration production",
+  "outputDirectory": "dist/glucotrack-web/browser",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
